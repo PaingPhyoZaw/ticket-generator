@@ -20,7 +20,7 @@ module.exports = async (req, res) => {
     console.log("event.jpg found, generating QR Code...");
 
     // Generate QR Code with proper size
-    const qrCodeBuffer = await QRCode.toBuffer(registrationID, { width: 180 }); // Reduce size if needed
+    const qrCodeBuffer = await QRCode.toBuffer(registrationID, { width: 230 }); // Reduce size if needed
 
     console.log("Overlaying QR code on ticket...");
 
@@ -28,8 +28,8 @@ module.exports = async (req, res) => {
       .composite([
         {
           input: qrCodeBuffer,
-          left: 1680, // Adjust to move QR left/right
-          top: 250, // Adjust to move QR up/down
+          left: 1700, // Adjust to move QR left/right
+          top: 60, // Adjust to move QR up/down
         },
       ])
       .toBuffer();
