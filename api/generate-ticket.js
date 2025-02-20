@@ -11,15 +11,25 @@ const airtableToken = process.env.AIRTABLE_ACCESS_TOKEN;
 async function getLatestSubmission() {
   try {
     const response = await axios.get(
-      `https://api.airtable.com/v0/${baseId}/${tableName}?sort[0][field]=Created&sort[0][direction]=desc&maxRecords=1`,
+      `https://api.airtable.com/v0/${baseId}/${tableName}`,
       {
         headers: { Authorization: `Bearer ${airtableToken}` },
       }
     );
 
-    return response.data.records[0]; // Fetch the latest submitted record
+    console.log("Airtable Response:", JSON.stringify(response.data, null, 2)); // Debugging output
+
+    if (!response.data.records || response.data.records.length === 0) {
+      console.error("No records found in Airtable.");
+      return null;
+    }
+
+    return response.data.records[0]; // Get the first record
   } catch (error) {
-    console.error("Error fetching Airtable data:", error);
+    console.error(
+      "Error fetching Airtable data:",
+      error.response ? error.response.data : error.message
+    );
     return null;
   }
 }
