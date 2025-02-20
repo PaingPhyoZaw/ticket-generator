@@ -1,37 +1,49 @@
-const sharp = require("sharp");
-const QRCode = require("qrcode");
+const axios = require("axios");
 const fs = require("fs");
 const path = require("path");
+const sharp = require("sharp");
+const QRCode = require("qrcode");
+
+const baseId = process.env.AIRTABLE_BASE_ID;
+const tableName = process.env.AIRTABLE_TABLE_NAME;
+const airtableToken = process.env.AIRTABLE_ACCESS_TOKEN;
+
+async function getLatestSubmission() {
+  try {
+    const response = await axios.get(
+      `https://api.airtable.com/v0/${baseId}/${tableName}?sort[0][field]=Created&sort[0][direction]=desc&maxRecords=1`,
+      {
+        headers: { Authorization: `Bearer ${airtableToken}` },
+      }
+    );
+
+    return response.data.records[0]; // Fetch the latest submitted record
+  } catch (error) {
+    console.error("Error fetching Airtable data:", error);
+    return null;
+  }
+}
 
 module.exports = async (req, res) => {
   try {
-    const { registrationID } = req.query;
-    if (!registrationID) return res.status(400).send("Missing registration ID");
+    const latestRecord = await getLatestSubmission();
+    if (!latestRecord)
+      return res.status(500).send("No records found in Airtable");
+
+    const registrationID = latestRecord.fields["Name"]; // Use "Name" instead of "ID"
 
     console.log("Generating ticket for:", registrationID);
 
-    // Path to the ticket template image
     const ticketTemplatePath = path.join(process.cwd(), "public", "event.jpg");
     if (!fs.existsSync(ticketTemplatePath)) {
-      console.error("ERROR: event.jpg missing at", ticketTemplatePath);
+      console.error("ERROR: event.jpg missing");
       return res.status(500).send("Ticket template not found");
     }
 
-    console.log("event.jpg found, generating QR Code...");
-
-    // Generate QR Code with proper size
-    const qrCodeBuffer = await QRCode.toBuffer(registrationID, { width: 230 }); // Reduce size if needed
-
-    console.log("Overlaying QR code on ticket...");
+    const qrCodeBuffer = await QRCode.toBuffer(registrationID, { width: 180 });
 
     const finalImage = await sharp(ticketTemplatePath)
-      .composite([
-        {
-          input: qrCodeBuffer,
-          left: 1700, // Adjust to move QR left/right
-          top: 60, // Adjust to move QR up/down
-        },
-      ])
+      .composite([{ input: qrCodeBuffer, left: 1680, top: 250 }])
       .toBuffer();
 
     console.log("Ticket generated successfully!");
