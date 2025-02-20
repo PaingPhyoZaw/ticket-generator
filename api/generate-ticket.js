@@ -67,7 +67,7 @@ module.exports = async (req, res) => {
 
     // 🔹 Generate QR Code with the Registration ID
     const qrCodeBuffer = await QRCode.toBuffer(registrationID.toString(), {
-      width: 180,
+      width: 230,
     });
 
     // 🔹 Overlay QR Code on the ticket template
