@@ -72,7 +72,7 @@ module.exports = async (req, res) => {
 
     // 🔹 Overlay QR Code on the ticket template
     const finalImage = await sharp(ticketTemplatePath)
-      .composite([{ input: qrCodeBuffer, left: 1680, top: 250 }]) // Adjust QR code position as needed
+      .composite([{ input: qrCodeBuffer, left: 1700, top: 60 }]) // Adjust QR code position as needed
       .toBuffer();
 
     console.log("✅ Ticket generated successfully!");
